@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Roleta de Brindes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Montserrat', sans-serif;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      background: #ffffff;
+      color: #333;
+    }
+
+    #logo-container {
+      margin-top: 20px;
+    }
+
+    #logo-container img {
+      height: 150px;
+    }
+
+    h1 {
+      font-size: 2.5em;
+      color: #ff7f00;
+      margin: 10px 0 30px;
+    }
+
+    .roleta-container {
+      position: relative;
+      width: 100%;
+      max-width: 400px;
+      aspect-ratio: 1 / 1;
+      margin: 0 auto;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      border-radius: 50%;
+      background: white;
+    }
+
+    .seta {
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%) rotate(180deg);
+      width: 0;
+      height: 0;
+      border-left: 20px solid transparent;
+      border-right: 20px solid transparent;
+      border-top: 30px solid #ff7f00;
+      z-index: 10;
+      animation: pulse 1s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { transform: translateX(-50%) rotate(180deg) scale(1); }
+      to { transform: translateX(-50%) rotate(180deg) scale(1.1); }
+    }
+
+    svg {
+      width: 100%;
+      height: auto;
+      transition: transform 5s cubic-bezier(0.33, 1, 0.68, 1);
+    }
+
+    .botao {
+      margin-top: 30px;
+      padding: 14px 30px;
+      background-color: #ff7f00;
+      color: white;
+      font-weight: bold;
+      font-size: 18px;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+    }
+
+    .botao:hover {
+      transform: scale(1.05);
+      background-color: #cc6600;
+    }
+
+    text {
+      font-size: 12px;
+      fill: white;
+      font-weight: bold;
+    }
+
+    #resultado {
+      margin-top: 20px;
+      font-size: 22px;
+      font-weight: bold;
+      color: #8B4513;
+    }
+
+    #baloes-container {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 0;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    .balao {
+      position: absolute;
+      bottom: 0;
+      width: 30px;
+      height: 40px;
+      background-color: red;
+      border-radius: 50% 50% 45% 45%;
+      animation: subir 4s ease-out forwards;
+      opacity: 0.8;
+    }
+
+    @keyframes subir {
+      to {
+        transform: translateY(-100vh);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="logo-container">
+    <img src="imagens/logo.png" alt="Logo">
+  </div>
+
+  <h1>🎁 Roleta de Brindes 🎉</h1>
+
+  <div class="roleta-container">
+    <div class="seta"></div>
+    <svg id="roleta" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet">
+      <g id="setores"></g>
+    </svg>
+  </div>
+
+  <button class="botao" onclick="girarRoleta()" id="botaoGirar">GIRAR</button>
+
+  <div id="resultado"></div>
+
+  <div id="baloes-container"></div>
+
+  <script>
+    const premios = [
+      "Lente de contato", "Spray", "Lente solar", "30% na armação",
+      "50% na armação", "Lente visão simples", "Lente contato colorida", "Exame de vista"
+    ];
+
+    const cores = ["#ff7f00", "#8B4513"];
+    const setores = document.getElementById("setores");
+    const total = premios.length;
+    const centerX = 200;
+    const centerY = 200;
+    const radius = 180;
+    let anguloTotal = 0;
+
+    if (localStorage.getItem("roletaGirada") === "true") {
+      document.getElementById("botaoGirar").disabled = true;
+      document.getElementById("resultado").innerText = "Você já girou a roleta.";
+    }
+
+    for (let i = 0; i < total; i++) {
+      const angle1 = (i / total) * 2 * Math.PI;
+      const angle2 = ((i + 1) / total) * 2 * Math.PI;
+
+      const x1 = centerX + radius * Math.cos(angle1);
+      const y1 = centerY + radius * Math.sin(angle1);
+      const x2 = centerX + radius * Math.cos(angle2);
+      const y2 = centerY + radius * Math.sin(angle2);
+
+      const largeArc = (angle2 - angle1 > Math.PI) ? 1 : 0;
+
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      const d = `M${centerX},${centerY} L${x1},${y1} A${radius},${radius} 0 ${largeArc},1 ${x2},${y2} Z`;
+      path.setAttribute("d", d);
+      path.setAttribute("fill", cores[i % 2]);
+      setores.appendChild(path);
+
+      const textAngle = (angle1 + angle2) / 2;
+      const textX = centerX + (radius / 2) * Math.cos(textAngle);
+      const textY = centerY + (radius / 2) * Math.sin(textAngle);
+
+      const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      text.setAttribute("x", textX);
+      text.setAttribute("y", textY);
+      text.setAttribute("dominant-baseline", "middle");
+      text.setAttribute("text-anchor", "middle");
+      text.setAttribute("transform", `rotate(${(textAngle * 180 / Math.PI)}, ${textX}, ${textY})`);
+      text.setAttribute("font-size", window.innerWidth <= 480 ? "10" : "14");
+      text.textContent = premios[i];
+      setores.appendChild(text);
+    }
+
+    function criarBaloes() {
+      const container = document.getElementById("baloes-container");
+      for (let i = 0; i < 15; i++) {
+        const balao = document.createElement("div");
+        balao.classList.add("balao");
+        balao.style.left = Math.random() * 100 + "vw";
+        balao.style.backgroundColor = `hsl(${Math.random() * 360}, 70%, 60%)`;
+        container.appendChild(balao);
+        setTimeout(() => balao.remove(), 4000);
+      }
+    }
+
+    function girarRoleta() {
+      if (localStorage.getItem("roletaGirada") === "true") return;
+
+      const roleta = document.getElementById("roleta");
+      const grausPorSetor = 360 / premios.length;
+      const rotacoes = 5;
+      const setoresGirados = Math.floor(Math.random() * premios.length);
+      const destino = setoresGirados * grausPorSetor;
+
+      anguloTotal += rotacoes * 360 + destino + grausPorSetor / 2;
+      roleta.style.transform = `rotate(-${anguloTotal}deg)`;
+
+      setTimeout(() => {
+        localStorage.setItem("roletaGirada", "true");
+        document.getElementById("botaoGirar").disabled = true;
+        document.getElementById("resultado").innerText = "🎉 Você ganhou!";
+        criarBaloes();
+      }, 5200);
+    }
+  </script>
+
+</body>
+</html>
