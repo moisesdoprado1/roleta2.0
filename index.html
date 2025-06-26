@@ -217,9 +217,9 @@
       const grausPorSetor = 360 / premios.length;
       const rotacoes = 5;
       const setoresGirados = Math.floor(Math.random() * premios.length);
-      const destino = setoresGirados * grausPorSetor;
+     const destino = setoresGirados * grausPorSetor + grausPorSetor / 2;
 
-      anguloTotal += rotacoes * 360 + destino + grausPorSetor / 2;
+      anguloTotal += rotacoes * 360 + destino;
       roleta.style.transform = `rotate(-${anguloTotal}deg)`;
 
       setTimeout(() => {
